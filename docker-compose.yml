@@ -1,0 +1,27 @@
+services:
+    migrate:
+        build:
+            context: .
+            target: migrator
+        environment:
+            - DATABASE_URL=file:./database/passwordManager.db
+        volumes:
+            - password_manager:/app/data
+    app:
+        build:
+            context: .
+            target: production
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
+        ports:
+            - '3000:3000'
+        environment:
+            - NODE_ENV=production
+            - DATABASE_URL=file:./database/passwordManager.db
+        volumes:
+            - password_manager:/app/data
+        restart: unless-stopped
+
+volumes:
+    password_manager:
