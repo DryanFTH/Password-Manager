@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Vault {
+  id   String @id @default(cuid())
+  name String
+
+  salt String
+
+  protectedVaultKeyNonce      String
+  protectedVaultKeyCiphertext String
+
+  argonMemoryCost  Int @default(19456)
+  argonTimeCost    Int @default(2)
+  argonParallelism Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories Category[]
+  items      PasswordItem[]
+
+  @@map("vaults")
+}
+
+model Category {
+  id      String @id @default(cuid())
+  vaultId String
+  vault   Vault  @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+
+  // JSON terenkripsi: { name, color?, icon? }
+  nonce      String
+  ciphertext String
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items PasswordItem[]
+
+  @@index([vaultId])
+  @@map("categories")
+}
+
+model PasswordItem {
+  id      String @id @default(cuid())
+  vaultId String
+  vault   Vault  @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Ciphertext berisi JSON: { website, username, password, notes, favorite, customFields }
+  nonce      String
+  ciphertext String
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  passwordSetAt DateTime  @default(now())
+  lastUsedAt    DateTime?
+
+  isFavorite Boolean @default(false)
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  @@index([vaultId])
+  @@index([categoryId])
+  @@index([vaultId, isFavorite])
+  @@index([vaultId, isDeleted])
+  @@map("password_items")
+}
