@@ -47,7 +47,6 @@ ENV DATABASE_URL="file:./database/passwordManager.db"
 # hasil standalone (sudah termasuk node_modules minimal + server.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # schema prisma dibutuhkan kalau kamu run migrate di runtime/entrypoint
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
