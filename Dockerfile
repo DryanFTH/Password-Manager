@@ -26,9 +26,9 @@ RUN pnpm build
 
 FROM builder AS migrator
 
-WORKDIR /app
+ENV DATABASE_URL="file:./database/passwordManager.db"
 
-CMD ["pnpm", "prisma", "migrate", "deploy"]
+RUN pnpm prisma migrate deploy
 
 #=======================================================
 
@@ -45,11 +45,11 @@ ENV NODE_ENV=production
 ENV DATABASE_URL="file:./database/passwordManager.db"
 
 # hasil standalone (sudah termasuk node_modules minimal + server.js)
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=migrator --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=migrator --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # schema prisma dibutuhkan kalau kamu run migrate di runtime/entrypoint
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=migrator --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=migrator --chown=nextjs:nodejs /app/database ./database
 
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
