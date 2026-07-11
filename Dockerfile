@@ -51,7 +51,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # schema prisma dibutuhkan kalau kamu run migrate di runtime/entrypoint
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/database ./database
 
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
